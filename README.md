@@ -148,7 +148,7 @@ All paths are served under the base path **`/api`** (`server.servlet.contextPath
 | Method | Path                                 | Description |
 |--------|--------------------------------------|-------------|
 | GET    | `/restaurant`                        | All restaurants, ordered by rating. |
-| GET    | `/restaurant/name/{restaurantName}`  | Search restaurants by name (partial match). |
+| GET    | `/restaurant/name/{restaurantName}`  | Search restaurants by name. |
 | GET    | `/restaurant/category/{categoryId}`  | Restaurants in a category. |
 | GET    | `/restaurant/{restaurantId}`         | Restaurant details with categories and items. |
 | PUT    | `/restaurant/edit/{restaurantId}?customerRating=` 🔒 | Rate a restaurant (1–5). The running average is updated. |
@@ -162,7 +162,7 @@ All paths are served under the base path **`/api`** (`server.servlet.contextPath
 | Method | Path                         | Description |
 |--------|------------------------------|-------------|
 | GET    | `/order/coupon/{couponName}` 🔒 | Look up a coupon by name. |
-| GET    | `/order/customer` 🔒            | The customer's past orders, newest first. The tests call `GET /order`. |
+| GET    | `/order/customer` 🔒            | The customer's past orders. The tests call `GET /order`. |
 | POST   | `/order` 🔒                     | Place an order (`SaveOrderRequest`: `address_id`*, `payment_id`*, `bill`*, `restaurant_id`*, `coupon_id`, `discount`, `item_quantities[]`). |
 
 ### Payment (`payment.json`)
@@ -202,13 +202,13 @@ RESTAURANT (restaurant_name, photo_url, customer_rating, average_price_for_two,
   └── RESTAURANT_ITEM     (restaurant_id, item_id)                          [M:N]
 
 CATEGORY (category_name) ── CATEGORY_ITEM (category_id, item_id)            [M:N]
-ITEM (item_name, price, type)           -- type: VEG / NON_VEG
+ITEM (item_name, price, type)           -- seed data stores type as '0' / '1' (veg / non-veg)
 COUPON (coupon_name, percent)
 PAYMENT (payment_name)
 ```
 
 Notes:
-- `ADDRESS.active` (default 1) supports soft delete. An address used by a past order is archived (`active = 0`) instead of being deleted.
+- `ADDRESS.active` (default 1) is a flag that allows soft delete, for example archiving an address that past orders still reference.
 - Most child foreign keys use `ON DELETE CASCADE`. `ORDERS → PAYMENT/RESTAURANT/ADDRESS/COUPON` do not.
 
 ## Seed data
@@ -235,13 +235,13 @@ Domain exceptions live in `service.exception`. They are checked exceptions holdi
 |-----------|-------------|-------------|
 | `SignUpRestrictedException` (`SGR-xxx`) | duplicate contact, invalid email/contact/password, missing fields | 400 |
 | `AuthenticationFailedException` (`ATH-xxx`) | bad Basic header, wrong credentials | 401 |
-| `AuthorizationFailedException` (`ATHR-xxx`) | missing, logged-out or expired token; acting on another customer's resource | 403 |
+| `AuthorizationFailedException` (`ATHR-001..004`) | missing, logged-out or expired token (001–003); acting on another customer's resource (004) | 403 |
 | `UpdateCustomerException` (`UCR-xxx`) | invalid profile or password update | 400 |
 | `SaveAddressException` (`SAR-xxx`) | empty fields, invalid pincode | 400 |
 | `AddressNotFoundException` (`ANF-xxx`) | unknown address or state | 404 |
 | `CategoryNotFoundException` (`CNF-xxx`) | | 404 |
 | `RestaurantNotFoundException` (`RNF-xxx`) | | 404 |
-| `ItemNotFoundException` (`INF-xxx`) | | 404 |
+| `ItemNotFoundException` | | 404 |
 | `CouponNotFoundException` (`CPF-xxx`) | | 404 |
 | `PaymentMethodNotFoundException` (`PNF-xxx`) | | 404 |
 | `InvalidRatingException` (`IRE-xxx`) | rating outside 1–5 | 400 |
