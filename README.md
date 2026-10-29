@@ -202,7 +202,7 @@ RESTAURANT (restaurant_name, photo_url, customer_rating, average_price_for_two,
   └── RESTAURANT_ITEM     (restaurant_id, item_id)                          [M:N]
 
 CATEGORY (category_name) ── CATEGORY_ITEM (category_id, item_id)            [M:N]
-ITEM (item_name, price, type)           -- seed data stores type as '0' / '1' (veg / non-veg)
+ITEM (item_name, price, type)           -- API enum VEG / NON_VEG; seed data stores '0' / '1'
 COUPON (coupon_name, percent)
 PAYMENT (payment_name)
 ```
